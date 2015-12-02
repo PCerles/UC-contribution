@@ -1,3 +1,5 @@
+// source for starter: http://bl.ocks.org/stepheneb/1182434
+
 registerKeyboardHandler = function(callback) {
   var callback = callback;
   d3.select(window).on("keydown", callback);  
@@ -70,7 +72,7 @@ SimpleGraph = function(elemid, options) {
   this.plot = this.vis.append("rect")
       .attr("width", this.size.width)
       .attr("height", this.size.height)
-      .style("fill", "#EEEEEE")
+      .style("fill", "#ffffff")
       .attr("pointer-events", "all");
       //this.plot.call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", this.redraw()));
 
@@ -131,7 +133,7 @@ SimpleGraph = function(elemid, options) {
   stroke = function(d) { 
     return d ? "#ccc" : "#666"; 
   },
-  fx = self.x.tickFormat(10),
+  fx = self.x.tickFormat(10);
   fy = self.y.tickFormat(10);
 
   // Make x ticks
@@ -156,7 +158,7 @@ SimpleGraph = function(elemid, options) {
       .attr("y", self.size.height)
       .attr("dy", "1em")
       .attr("text-anchor", "middle")
-      .text(fx)
+      .text(d3.format(fx))
       .style("cursor", "ew-resize")
       .on("mouseover", function(d) { d3.select(this).style("font-weight", "bold");})
       .on("mouseout",  function(d) { d3.select(this).style("font-weight", "normal");});
@@ -230,8 +232,9 @@ SimpleGraph.prototype.update = function() {
   
   elemEnter.append("text")
       .text(function(d) { return "$" + d.y.toFixed(0)})
-      .attr("dx", function(d){return self.x(d.x) - 20})
-      .attr("dy", function(d){return self.y(d.y) - 15});
+      .attr("dx", function(d){return self.x(d.x) - 25})
+      .attr("dy", function(d){return self.y(d.y) - 15})
+      .style('font-weight', 100);
 
   elem.exit().remove();
 
