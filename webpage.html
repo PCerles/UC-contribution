@@ -3,10 +3,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <title>One Graph</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <script type="text/javascript" src="d3.js"></script>
     <script type="text/javascript" src="logic.js"></script>
+
     <style type="text/css">
-      body { font: 13px sans-serif; }
+      .container {
+        margin: 20px auto;
+      }
       rect { fill: #fff; }
       ul {
         list-style-type: none;
@@ -17,10 +21,8 @@
           vertical-align: middle;
           margin: 0em;
           padding: 0em 1em; }
-      .axis { font-size: 1.5em; }
       .chart {
         background-color: white;
-        width: 960px;
         height: 500px; }
       circle, .line {
         fill: none;
@@ -42,29 +44,43 @@
     </style>
   </head>
   <body>
-    <p>
-      <text>When did you start paying taxes in California?</text>
-      <select>
-        <option value='1965'>1965</option>
-        <option value='1965'>1970</option>
-        <option value='1965'>1975</option>
-        <option value='1965'>1980</option>
-        <option value='1965'>1985</option>
-        <option value='1965'>1990</option>
-        <option value='1965'>1995</option>
-        <option value='1965'>2000</option>
-        <option value='1965'>2005</option>
-        <option value='1965'>2010</option>
-        <option value='1965'>2015</option>
-      </select>
-    </p>
-    <p>
-      <text>Enter your maximum income earned</text>
-      <input></input>
-    </p>
-    <button id="makeNewGraph">Make New Graph</button>
-    <div id="chart1" class="chart"></div>
-    <div id="contribution"></div>
+    <div class="container">
+      <div class="row">
+        <form class="col-md-4">
+          <div class="form-group">
+            <label for="year">When did you start paying taxes in California?</label>
+            <select class="form-control" id="year">
+              <option value='1965'>1965</option>
+              <option value='1965'>1970</option>
+              <option value='1965'>1975</option>
+              <option value='1965'>1980</option>
+              <option value='1965'>1985</option>
+              <option value='1965'>1990</option>
+              <option value='1965'>1995</option>
+              <option value='1965'>2000</option>
+              <option value='1965'>2005</option>
+              <option value='1965'>2010</option>
+              <option value='1965'>2015</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="max-income">Enter your maximum income earned.</label>
+            <input class="form-control" id="max-income"></input>
+          </div>
+          <button class="btn btn-default" id="makeNewGraph" type="submit">Make New Graph</button>
+        </form>
+      </div>
+
+      <div class="row">
+        <div class="col-md-9">
+          <div id="chart1" class="chart"></div>
+        </div>
+        <div id="contribution" class="col-md-3">
+          <p>Approximate funding of UC:</p>
+        </div>
+      </div>
+    </div>
+
     <script type="text/javascript">
       graph = new SimpleGraph("chart1", {
           "xmax": 2015, "xmin": 1965,
@@ -74,6 +90,6 @@
           "ylabel": "Income"
         });
     </script>
-    <text>Approximate funding of UC:</text>
+    
   </body>
 </html>

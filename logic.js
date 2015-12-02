@@ -14,7 +14,7 @@ SimpleGraph = function(elemid, options) {
      "top":    this.options.title  ? 40 : 20,
      "right":                 30,
      "bottom": this.options.xlabel ? 60 : 10,
-     "left":   140
+     "left":   100
   };
 
   this.size = {
@@ -71,16 +71,7 @@ SimpleGraph = function(elemid, options) {
       .attr("pointer-events", "all");
       //this.plot.call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", this.redraw()));
 
-  this.vis.append("svg")
-      .attr("top", 0)
-      .attr("left", 0)
-      .attr("width", this.size.width)
-      .attr("height", this.size.height)
-      .attr("viewBox", "0 0 "+this.size.width+" "+this.size.height)
-      .attr("class", "line")
-      .append("path")
-          .attr("class", "line")
-          .attr("d", this.line(this.points));
+  
 
   // add Chart Title
   if (this.options.title) {
@@ -109,13 +100,8 @@ SimpleGraph = function(elemid, options) {
         .attr("class", "axis")
         .text(this.options.ylabel)
         .style("text-anchor","middle")
-        .attr("transform","translate(" + -100 + " " + this.size.height/2+") rotate(-90)");
+        .attr("transform","translate(" + -80 + " " + this.size.height/2+") rotate(-90)");
   }
- 
-
-  d3.select(this.chart)
-      .on("mousemove.drag", self.mousemove())
-      .on("touchmove.drag", self.mousemove());
 
   var tx = function(d) { 
     return "translate(" + self.x(d) + ",0)"; 
@@ -181,6 +167,22 @@ SimpleGraph = function(elemid, options) {
       .text(fy);
 
   gy.exit().remove();
+
+  this.vis.append("svg")
+      .attr("top", 0)
+      .attr("left", 0)
+      .attr("width", this.size.width)
+      .attr("height", this.size.height)
+      .attr("viewBox", "0 0 "+this.size.width+" "+this.size.height)
+      .attr("class", "line")
+      .append("path")
+          .attr("class", "line")
+          .attr("d", this.line(this.points));
+ 
+
+  d3.select(this.chart)
+      .on("mousemove.drag", self.mousemove())
+      .on("touchmove.drag", self.mousemove());
   self.update(); 
 };
   
