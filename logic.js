@@ -1,10 +1,3 @@
-// source for starter: http://bl.ocks.org/stepheneb/1182434
-
-registerKeyboardHandler = function(callback) {
-  var callback = callback;
-  d3.select(window).on("keydown", callback);  
-};
-
 SimpleGraph = function(elemid, options) {
   console.log('yo')
   var self = this;
@@ -122,9 +115,7 @@ SimpleGraph = function(elemid, options) {
 
   d3.select(this.chart)
       .on("mousemove.drag", self.mousemove())
-      .on("touchmove.drag", self.mousemove())
-      .on("mouseup.drag",   self.mouseup())
-      .on("touchend.drag",  self.mouseup());
+      .on("touchmove.drag", self.mousemove());
 
   var tx = function(d) { 
     return "translate(" + self.x(d) + ",0)"; 
@@ -233,17 +224,11 @@ SimpleGraph.prototype.update = function() {
       .style('font-weight', 100);
 
   elem.exit().remove();
-
-  if (d3.event && d3.event.keyCode) {
-    d3.event.preventDefault();
-    d3.event.stopPropagation();
-  }
 }
 
 SimpleGraph.prototype.datapoint_drag = function() {
   var self = this;
   return function(d) {
-    registerKeyboardHandler(self.keydown());
     document.onselectstart = function() { return false; };
     self.selected = self.dragged = d;
     self.update();
@@ -295,47 +280,6 @@ SimpleGraph.prototype.mousemove = function() {
       }
       d3.event.preventDefault();
       d3.event.stopPropagation();
-    }
-  }
-};
-
-SimpleGraph.prototype.mouseup = function() {
-  var self = this;
-  return function() {
-    document.onselectstart = function() { return true; };
-    d3.select('body').style("cursor", "auto");
-    d3.select('body').style("cursor", "auto");
-    if (!isNaN(self.downx)) {
-      self.update()();
-      self.downx = Math.NaN;
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-    };
-    if (!isNaN(self.downy)) {
-      self.update()();
-      self.downy = Math.NaN;
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-    }
-    if (self.dragged) { 
-      self.dragged = null 
-    }
-  }
-}
-
-SimpleGraph.prototype.keydown = function() {
-  var self = this;
-  return function() {
-    if (!self.selected) return;
-    switch (d3.event.keyCode) {
-      case 8: // backspace
-      case 46: { // delete
-        var i = self.points.indexOf(self.selected);
-        self.points.splice(i, 1);
-        self.selected = self.points.length ? self.points[i > 0 ? i - 1 : 0] : null;
-        self.update();
-        break;
-      }
     }
   }
 };
