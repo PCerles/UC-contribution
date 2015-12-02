@@ -56,7 +56,9 @@ SimpleGraph = function(elemid, options) {
 
 
   this.points = d3.range(datacount).map(function(i) { 
-    return { x: i * xrange / datacount + this.options.xmin, y: 100000 }; 
+    return { x: i * xrange / datacount + this.options.xmin,
+             y: 100000,
+             index: i }; 
   }, self);
 
   this.line = d3.svg.line()
@@ -158,10 +160,7 @@ SimpleGraph = function(elemid, options) {
       .attr("y", self.size.height)
       .attr("dy", "1em")
       .attr("text-anchor", "middle")
-      .text(d3.format(fx))
-      .style("cursor", "ew-resize")
-      .on("mouseover", function(d) { d3.select(this).style("font-weight", "bold");})
-      .on("mouseout",  function(d) { d3.select(this).style("font-weight", "normal");});
+      .text(d3.format(fx));
 
   gx.exit().remove();
 
@@ -188,10 +187,7 @@ SimpleGraph = function(elemid, options) {
       .attr("x", -3)
       .attr("dy", ".35em")
       .attr("text-anchor", "end")
-      .text(fy)
-      .style("cursor", "ns-resize")
-      .on("mouseover", function(d) { d3.select(this).style("font-weight", "bold");})
-      .on("mouseout",  function(d) { d3.select(this).style("font-weight", "normal");});
+      .text(fy);
 
   gy.exit().remove();
   self.update(); 
@@ -251,7 +247,6 @@ SimpleGraph.prototype.datapoint_drag = function() {
     document.onselectstart = function() { return false; };
     self.selected = self.dragged = d;
     self.update();
-    
   }
 };
 
@@ -262,7 +257,11 @@ SimpleGraph.prototype.mousemove = function() {
         t = d3.event.changedTouches;
     
     if (self.dragged) {
-      self.dragged.y = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
+      var newY = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
+      for (var i = self.dragged.index; i < self.points.length; i++) {
+        self.points[i].y = newY;
+        self.points[i].moved = true;
+      }
       self.update();
     };
     if (!isNaN(self.downx)) {
