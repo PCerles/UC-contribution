@@ -1,12 +1,49 @@
+// data loaders
+
+// starts at 1967, goes to 2014
+var yearlyData;
+var taxrates;
+var graph;
+var dataCallback = function(data) {
+  yearlyData = data;
+  d3.json('data.json', function(error, json) {
+    if (error) return console.warn(error);
+    taxrateCallback(json);
+  })
+}
+
+var taxrateCallback = function(data) {
+  taxrates = data;
+  graph = new SimpleGraph("chart1", {
+          "xmax": 2015, "xmin": 1970,
+          "ymax": 150000, "ymin": 0, 
+          "title": "Graph your income",
+          "xlabel": "Year",
+          "ylabel": "Income ($)"
+        });
+}
+
+d3.csv('quintiledata.csv', function(d) {
+  return {
+    year: +d.Year,
+    first: +d.first,
+    second: +d.second,
+    third: +d.third,
+    fourth: +d.fourth,
+    salesTax: +d.salesTax,
+    percentageUC: +d.percentage_UC,
+    cpi: +d.CPI
+  };
+}, dataCallback);
+
 SimpleGraph = function(elemid, options) {
-  console.log('yo')
   var self = this;
   this.chart = document.getElementById(elemid);
   this.cx = this.chart.clientWidth;
   this.cy = this.chart.clientHeight;
   this.options = options || {};
-  this.options.xmax = options.xmax;
-  this.options.xmin = options.xmin;
+  this.options.xmax = options.xmax + 5;
+  this.options.xmin = options.xmin - 5;
   this.options.ymax = options.ymax;
   this.options.ymin = options.ymin;
 
@@ -14,7 +51,7 @@ SimpleGraph = function(elemid, options) {
      "top":    this.options.title  ? 40 : 20,
      "right":                 30,
      "bottom": this.options.xlabel ? 60 : 10,
-     "left":   100
+     "left":   90
   };
 
   this.size = {
@@ -27,8 +64,6 @@ SimpleGraph = function(elemid, options) {
       .domain([this.options.xmin, this.options.xmax])
       .range([0, this.size.width]);
 
-  // drag x-axis logic
-  this.downx = Math.NaN;
 
   // y-scale (inverted domain)
   this.y = d3.scale.linear()
@@ -37,26 +72,19 @@ SimpleGraph = function(elemid, options) {
       .range([0, this.size.height])
       .nice();
 
-  // drag y-axis logic
-  this.downy = Math.NaN;
-
   this.dragged = this.selected = null;
 
-  var xrange =  (this.options.xmax - this.options.xmin),
+  var xrange =  (this.options.xmax - this.options.xmin - 5),
       yrange2 = (this.options.ymax - this.options.ymin) / 2,
       yrange4 = yrange2 / 2,
       datacount = 10; // replace with logic
 
 
   this.points = d3.range(datacount).map(function(i) { 
-    return { x: i * xrange / datacount + this.options.xmin,
+    return { x: i * 5 + this.options.xmin + 5,
              y: 100000,
              index: i }; 
   }, self);
-
-  this.line = d3.svg.line()
-        .x(function(d, i) { return this.x(this.points[i].x); })
-        .y(function(d, i) { return this.y(this.points[i].y); });
 
   this.vis = d3.select(this.chart).append("svg")
       .attr("width",  this.cx)
@@ -71,12 +99,10 @@ SimpleGraph = function(elemid, options) {
       .attr("pointer-events", "all");
       //this.plot.call(d3.behavior.zoom().x(this.x).y(this.y).on("zoom", this.redraw()));
 
-  
-
   // add Chart Title
   if (this.options.title) {
     this.vis.append("text")
-        .attr("class", "axis")
+        .attr("class", "chart_title")
         .text(this.options.title)
         .attr("x", this.size.width/2)
         .attr("dy","-0.8em")
@@ -86,7 +112,7 @@ SimpleGraph = function(elemid, options) {
   // Add the x-axis label
   if (this.options.xlabel) {
     this.vis.append("text")
-        .attr("class", "axis")
+        .attr("class", "axislabel")
         .text(this.options.xlabel)
         .attr("x", this.size.width/2)
         .attr("y", this.size.height)
@@ -97,11 +123,18 @@ SimpleGraph = function(elemid, options) {
   // add y-axis label
   if (this.options.ylabel) {
     this.vis.append("g").append("text")
-        .attr("class", "axis")
+        .attr("class", "axislabel")
         .text(this.options.ylabel)
         .style("text-anchor","middle")
         .attr("transform","translate(" + -80 + " " + this.size.height/2+") rotate(-90)");
   }
+ 
+
+  d3.select(this.chart)
+      .on("mousemove.drag", self.mousemove())
+      .on("touchmove.drag", self.mousemove())
+      .on("mouseup.drag",   self.mouseup())
+      .on("touchend.drag",  self.mouseup());
 
   var tx = function(d) { 
     return "translate(" + self.x(d) + ",0)"; 
@@ -168,6 +201,10 @@ SimpleGraph = function(elemid, options) {
 
   gy.exit().remove();
 
+  this.line = d3.svg.line()
+        .x(function(d, i) { return this.x(this.points[i].x); })
+        .y(function(d, i) { return this.y(this.points[i].y); });
+
   this.vis.append("svg")
       .attr("top", 0)
       .attr("left", 0)
@@ -178,29 +215,9 @@ SimpleGraph = function(elemid, options) {
       .append("path")
           .attr("class", "line")
           .attr("d", this.line(this.points));
- 
-
-  d3.select(this.chart)
-      .on("mousemove.drag", self.mousemove())
-      .on("touchmove.drag", self.mousemove());
-  self.update(); 
-};
-  
-
-// converts the graphical data into an estimate for contribution amount
-var calculateContribution = function(d) {
-
-}
-
-
-SimpleGraph.prototype.update = function() {
-  var self = this;
-  var lines = this.vis.select("path").attr("d", this.line(this.points));
-
-  this.points.forEach(function(d) {return null}); // MAKE THIS CALL A FUNCITON THAT UPDATES
 
   var elem = this.vis.select("svg").selectAll("g")
-        .data(this.points, function(d) { return d; });
+        .data(this.points);
 
   var elemEnter = elem.enter()
       .append("g");
@@ -209,23 +226,93 @@ SimpleGraph.prototype.update = function() {
       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
       .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); })
-      .attr("r", 10.0)
-      .style("cursor", "ns-resize")
+      .attr("r", 7)
+      .style("cursor", "pointer")
       .on("mousedown.drag",  self.datapoint_drag())
       .on("touchstart.drag", self.datapoint_drag());
 
-  circle
+  elem.append("text")
+      .text(function(d) { return "$" + d.y.toFixed(0)})
+      .attr("class", 'circle_text')
+      .attr("dx", function(d){return self.x(d.x) - 25})
+      .attr("dy", function(d){return self.y(d.y) - 15});
+
+  self.update(); 
+};
+
+var spendingRates = {'first': .821, 'second': .467, 'third': .362, 'fourth': .315, 'fifth': .226};
+var CURRENT_CPI = 236.712;
+
+// The contribution in a year to the UC in 2015 dollars is
+// Total Contribution = Income * [tax rate + spending rate * sales tax rate] * Inflation Adjustment * %toUC
+var findYearContribution = function(year, income) {
+  var rate;
+  var found = false;
+  for (var i = 0; i < taxrates.length; i++) {
+    if (year <= +taxrates[i].year) {
+      for (var j = 0; j < taxrates[i].tax.length; j++) {
+        if (income <= +taxrates[i].tax[j].cutoff || taxrates[i].tax[j].cutoff == 'Inf') {
+          rate = +taxrates[i].tax[j].taxrate;
+          found = true;
+          break;
+        }
+      }
+    }
+    if (found) {
+      break;
+    }
+  }
+  var index = year - 1967;
+  var yearData = yearlyData[index];
+  var quintile;
+  if (income < +yearData.first) {
+    quintile = 'first';
+  } else if (income < +yearData.second) {
+    quintile = 'second';
+  } else if (income < +yearData.third) {
+    quintile = 'third';
+  } else if (income < +yearData.fourth) {
+    quintile = 'fourth';
+  } else {
+    quintile = 'fifth';
+  }
+  var app = income * (rate * .01 + spendingRates[quintile] * .01 * +yearData.salesTax)
+            * (CURRENT_CPI / yearData.cpi)
+            * yearData.percentageUC;
+  return app;
+}
+
+
+SimpleGraph.prototype.update = function() {
+  var self = this;
+  var lines = this.vis.select("path").attr("d", this.line(this.points));
+
+  var last = this.points[0];
+  var totalTax = 0
+
+  for (var i = 1; i < this.points.length; i++) {
+    var curr = this.points[i];
+    var interval = curr.x - last.x;
+    var diff = (curr.y - last.y) / interval;
+    for (var j = 0; j < interval; j++) {
+      totalTax += findYearContribution(j + last.x, last.y + diff * j);
+    }
+    last = curr;
+  }
+  var a = d3.select('#contrib')
+    .html('$'+totalTax.toFixed(0));
+  var elem = this.vis.select("svg").selectAll("g");
+
+  elem.selectAll('circle')
       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
       .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); })
-  
-  elemEnter.append("text")
+
+  elem.selectAll("text")
       .text(function(d) { return "$" + d.y.toFixed(0)})
       .attr("dx", function(d){return self.x(d.x) - 25})
-      .attr("dy", function(d){return self.y(d.y) - 15})
-      .style('font-weight', 100);
+      .attr("dy", function(d){return self.y(d.y) - 15});
 
-  elem.exit().remove();
 }
 
 SimpleGraph.prototype.datapoint_drag = function() {
@@ -240,49 +327,29 @@ SimpleGraph.prototype.datapoint_drag = function() {
 SimpleGraph.prototype.mousemove = function() {
   var self = this;
   return function() {
-    var p = d3.svg.mouse(self.vis[0][0]),
+    var p = d3.mouse(self.vis[0][0]),
         t = d3.event.changedTouches;
     
     if (self.dragged) {
       var newY = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
       for (var i = self.dragged.index; i < self.points.length; i++) {
         self.points[i].y = newY;
-        self.points[i].moved = true;
       }
       self.update();
     };
-    if (!isNaN(self.downx)) {
-      d3.select('body').style("cursor", "ew-resize");
-      var rupx = self.x.invert(p[0]),
-          xaxis1 = self.x.domain()[0],
-          xaxis2 = self.x.domain()[1],
-          xextent = xaxis2 - xaxis1;
-      if (rupx != 0) {
-        var changex, new_domain;
-        changex = self.downx / rupx;
-        new_domain = [xaxis1, xaxis1 + (xextent * changex)];
-        self.x.domain(new_domain);
-        self.update()();
-      }
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-    };
-    if (!isNaN(self.downy)) {
-      d3.select('body').style("cursor", "ns-resize");
-      var rupy = self.y.invert(p[1]),
-          yaxis1 = self.y.domain()[1],
-          yaxis2 = self.y.domain()[0],
-          yextent = yaxis2 - yaxis1;
-      if (rupy != 0) {
-        var changey, new_domain;
-        changey = self.downy / rupy;
-        new_domain = [yaxis1 + (yextent * changey), yaxis1];
-        self.y.domain(new_domain);
-        self.update()();
-      }
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-    }
   }
 };
+
+SimpleGraph.prototype.mouseup = function() {
+  var self = this;
+  return function() {
+    document.onselectstart = function() { return true; };
+    d3.select('body').style("cursor", "auto");
+    d3.select('body').style("cursor", "auto");
+    if (self.dragged) { 
+      self.dragged = null 
+    }
+  }
+}
+
 

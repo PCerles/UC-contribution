@@ -4,8 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <title>One Graph</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <script type="text/javascript" src="d3.js"></script>
-    <script type="text/javascript" src="logic.js"></script>
+    <script type="text/javascript" src="d3.min.js"></script>
 
     <style type="text/css">
       .container {
@@ -77,19 +76,11 @@
         </div>
         <div id="contribution" class="col-md-3">
           <p>Approximate funding of UC:</p>
+          <h1 id="contrib">Hello World!</h1>
         </div>
       </div>
     </div>
-
-    <script type="text/javascript">
-      graph = new SimpleGraph("chart1", {
-          "xmax": 2015, "xmin": 1965,
-          "ymax": 2000000, "ymin": 0, 
-          "title": "Graph your income",
-          "xlabel": "Year",
-          "ylabel": "Income"
-        });
-    </script>
+    <script type="text/javascript" src="logic.js"></script>
     
   </body>
 </html>
