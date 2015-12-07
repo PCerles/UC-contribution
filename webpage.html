@@ -5,6 +5,7 @@
     <title>One Graph</title>
     <link href="bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" src="d3.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 
     <style type="text/css">
       .chart {
@@ -60,10 +61,11 @@
           </div>
           <button class="btn btn-default" id="makeNewGraph" type="submit">Make New Graph</button>
         </form>
+        <input type="checkbox" id="inflation-adjust-checkbox" value="inflation">Inflation adjusted income<br>
       </div>
 
       <div class="row">
-          <div class="col-sm-6">
+          <div class="col-sm-12">
             <div class="row">
               <div id="chart1" class="chart"></div>
             </div class="row">
@@ -71,17 +73,6 @@
                 <div class="center-block">
                   <h3 >Approximate funding of UC (2015 Dollars):</h3>
                   <h1 id="contrib" style="color:steelblue"></h1>
-                </div>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="row">
-              <div id="chart2" class="chart"></div>
-            </div class="row">
-            <div class="row" style="text-align:center;">
-                <div class="center-block">
-                  <h3 >Approximate funding of UC (2015 Dollars):</h3>
-                  <h1 id="contrib_inf" style="color:steelblue"></h1>
                 </div>
             </div>
           </div>

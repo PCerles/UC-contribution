@@ -23,15 +23,12 @@ var taxrateCallback = function(data) {
           "ylabel": "Income ($)",
           "inflation": false
         });
-  graph = new SimpleGraph("chart2", {
-          "xmax": 2010, "xmin": 1970,
-          "ymax": 500000, "ymin": 0, 
-          "title": "Graph your income (in 2015 dollars)",
-          "xlabel": "Year",
-          "ylabel": "",
-          "inflation": true
-        });
 }
+
+$('#inflation-adjust-checkbox').change(function(){
+    this.checked ? graph.setInflationMode(true) : graph.setInflationMode(false);
+});
+
 
 d3.csv('quintiledata.csv', function(d) {
   return {
@@ -134,6 +131,7 @@ SimpleGraph = function(elemid, options) {
   // add y-axis label
   if (this.options.ylabel) {
     this.vis.append("g").append("text")
+        .attr("id", "y_axislabel")
         .attr("class", "axislabel")
         .text(this.options.ylabel)
         .style("text-anchor","middle")
@@ -250,6 +248,15 @@ SimpleGraph = function(elemid, options) {
   self.update(); 
 };
 
+/** Sets the units of the y axis to be inflation based or not. */
+SimpleGraph.prototype.setInflationMode = function(inflation_adjusted) {
+  this.inflation = inflation_adjusted;
+  this.options.ylabel = inflation_adjusted ? "Income (2015 dollars)" : "Income (not inflation adjusted)";
+  this.vis.select('#y_axislabel')
+      .text(this.options.ylabel);
+  this.update();
+}
+
 
 // The contribution in a year to the UC in 2015 dollars is
 // Total Contribution = Income * [tax rate + spending rate * sales tax rate] * Inflation Adjustment * %toUC
@@ -265,7 +272,6 @@ SimpleGraph.prototype.findYearContribution = function(year, income) {
   for (var i = 0; i < taxrates.length; i++) {
     if (year <= +taxrates[i].year) {
       for (var j = 0; j < taxrates[i].tax.length; j++) {
-        console.log(totalIncomeTax)
         if (income > +taxrates[i].tax[j].cutoff) {
           totalIncomeTax += +taxrates[i].tax[j].taxrate * .01 * (+taxrates[i].tax[j].cutoff - lastCutoff);
           lastCutoff = +taxrates[i].tax[j].cutoff;
@@ -292,7 +298,6 @@ SimpleGraph.prototype.findYearContribution = function(year, income) {
   } else {
     quintile = 'fifth';
   }
-  console.log(totalIncomeTax)
   var app = (totalIncomeTax + (income * spendingRates[quintile] * .01 * +yearData.salesTax))
             * (CURRENT_CPI / yearData.cpi)
             * yearData.percentageUC;
@@ -316,8 +321,7 @@ SimpleGraph.prototype.update = function() {
     }
     last = curr;
   }
-  var contrib_text = this.inflation ? "#contrib_inf" : "#contrib";
-  d3.select(contrib_text)
+  d3.select('#contrib')
     .html('$'+totalTax.toFixed(0));
   var elem = this.vis.select("svg").selectAll("g");
 
