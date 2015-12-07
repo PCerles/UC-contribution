@@ -254,18 +254,23 @@ SimpleGraph = function(elemid, options) {
 // The contribution in a year to the UC in 2015 dollars is
 // Total Contribution = Income * [tax rate + spending rate * sales tax rate] * Inflation Adjustment * %toUC
 SimpleGraph.prototype.findYearContribution = function(year, income) {
-  var rate;
   var found = false;
   var index = year - 1967;
   var yearData = yearlyData[index];
   if (this.inflation) {
     income = income * (yearData.cpi / CURRENT_CPI);
   }
+  var totalIncomeTax = 0;
+  var lastCutoff = 0;
   for (var i = 0; i < taxrates.length; i++) {
     if (year <= +taxrates[i].year) {
       for (var j = 0; j < taxrates[i].tax.length; j++) {
-        if (income <= +taxrates[i].tax[j].cutoff || taxrates[i].tax[j].cutoff == 'Inf') {
-          rate = +taxrates[i].tax[j].taxrate;
+        console.log(totalIncomeTax)
+        if (income > +taxrates[i].tax[j].cutoff) {
+          totalIncomeTax += +taxrates[i].tax[j].taxrate * .01 * (+taxrates[i].tax[j].cutoff - lastCutoff);
+          lastCutoff = +taxrates[i].tax[j].cutoff;
+        } else {
+          totalIncomeTax += (income - lastCutoff) * +taxrates[i].tax[j].taxrate * .01;
           found = true;
           break;
         }
@@ -287,7 +292,8 @@ SimpleGraph.prototype.findYearContribution = function(year, income) {
   } else {
     quintile = 'fifth';
   }
-  var app = income * (rate * .01 + spendingRates[quintile] * .01 * +yearData.salesTax)
+  console.log(totalIncomeTax)
+  var app = (totalIncomeTax + (income * spendingRates[quintile] * .01 * +yearData.salesTax))
             * (CURRENT_CPI / yearData.cpi)
             * yearData.percentageUC;
   return app;
