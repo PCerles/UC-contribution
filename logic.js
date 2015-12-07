@@ -1,5 +1,6 @@
 // data loaders
-
+var spendingRates = {'first': .821, 'second': .467, 'third': .362, 'fourth': .315, 'fifth': .226};
+var CURRENT_CPI = 236.712;
 // starts at 1967, goes to 2014
 var yearlyData;
 var taxrates;
@@ -15,11 +16,20 @@ var dataCallback = function(data) {
 var taxrateCallback = function(data) {
   taxrates = data;
   graph = new SimpleGraph("chart1", {
-          "xmax": 2015, "xmin": 1970,
-          "ymax": 150000, "ymin": 0, 
+          "xmax": 2010, "xmin": 1970,
+          "ymax": 200000, "ymin": 0, 
           "title": "Graph your income",
           "xlabel": "Year",
-          "ylabel": "Income ($)"
+          "ylabel": "Income ($)",
+          "inflation": false
+        });
+  graph = new SimpleGraph("chart2", {
+          "xmax": 2010, "xmin": 1970,
+          "ymax": 500000, "ymin": 0, 
+          "title": "Graph your income (in 2015 dollars)",
+          "xlabel": "Year",
+          "ylabel": "Income ($)",
+          "inflation": true
         });
 }
 
@@ -46,6 +56,7 @@ SimpleGraph = function(elemid, options) {
   this.options.xmin = options.xmin - 5;
   this.options.ymax = options.ymax;
   this.options.ymin = options.ymin;
+  this.inflation = options.inflation;
 
   this.padding = {
      "top":    this.options.title  ? 40 : 20,
@@ -77,7 +88,7 @@ SimpleGraph = function(elemid, options) {
   var xrange =  (this.options.xmax - this.options.xmin - 5),
       yrange2 = (this.options.ymax - this.options.ymin) / 2,
       yrange4 = yrange2 / 2,
-      datacount = 10; // replace with logic
+      datacount = 9; // replace with logic
 
 
   this.points = d3.range(datacount).map(function(i) { 
@@ -211,7 +222,6 @@ SimpleGraph = function(elemid, options) {
       .attr("width", this.size.width)
       .attr("height", this.size.height)
       .attr("viewBox", "0 0 "+this.size.width+" "+this.size.height)
-      .attr("class", "line")
       .append("path")
           .attr("class", "line")
           .attr("d", this.line(this.points));
@@ -240,14 +250,17 @@ SimpleGraph = function(elemid, options) {
   self.update(); 
 };
 
-var spendingRates = {'first': .821, 'second': .467, 'third': .362, 'fourth': .315, 'fifth': .226};
-var CURRENT_CPI = 236.712;
 
 // The contribution in a year to the UC in 2015 dollars is
 // Total Contribution = Income * [tax rate + spending rate * sales tax rate] * Inflation Adjustment * %toUC
-var findYearContribution = function(year, income) {
+SimpleGraph.prototype.findYearContribution = function(year, income) {
   var rate;
   var found = false;
+  var index = year - 1967;
+  var yearData = yearlyData[index];
+  if (this.inflation) {
+    income = income * (yearData.cpi / CURRENT_CPI);
+  }
   for (var i = 0; i < taxrates.length; i++) {
     if (year <= +taxrates[i].year) {
       for (var j = 0; j < taxrates[i].tax.length; j++) {
@@ -262,8 +275,6 @@ var findYearContribution = function(year, income) {
       break;
     }
   }
-  var index = year - 1967;
-  var yearData = yearlyData[index];
   var quintile;
   if (income < +yearData.first) {
     quintile = 'first';
@@ -295,7 +306,7 @@ SimpleGraph.prototype.update = function() {
     var interval = curr.x - last.x;
     var diff = (curr.y - last.y) / interval;
     for (var j = 0; j < interval; j++) {
-      totalTax += findYearContribution(j + last.x, last.y + diff * j);
+      totalTax += this.findYearContribution(j + last.x, last.y + diff * j);
     }
     last = curr;
   }
@@ -308,7 +319,7 @@ SimpleGraph.prototype.update = function() {
       .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); })
 
-  elem.selectAll("text")
+  elem.selectAll(".circle_text")
       .text(function(d) { return "$" + d.y.toFixed(0)})
       .attr("dx", function(d){return self.x(d.x) - 25})
       .attr("dy", function(d){return self.y(d.y) - 15});

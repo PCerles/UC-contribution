@@ -14,15 +14,18 @@
       ul {
         list-style-type: none;
         margin: 0.5em 0em 0.5em 0em;
-        width: 100%; }
-        ul li {
+        width: 100%;
+      }
+      ul li {
           display: table-cell;
           vertical-align: middle;
           margin: 0em;
-          padding: 0em 1em; }
+          padding: 0em 1em;
+      }
       .chart {
         background-color: white;
-        height: 500px; }
+        height: 500px;
+      }
       circle, .line {
         fill: none;
         stroke: steelblue;
@@ -30,16 +33,20 @@
       circle {
         fill: white;
         fill-opacity: 0.2;
-        cursor: move; }
-        circle.selected {
-          fill: #ff7f0e;
-          stroke: #ff7f0e; }
-        circle:hover {
-          fill: #ff7f0e;
-          stroke: #707f0e; }
-        circle.selected:hover {
-          fill: #ff7f0e;
-          stroke: #ff7f0e; }
+        cursor: move; 
+      }
+      circle.selected {
+        fill: #ff7f0e;
+        stroke: #ff7f0e;
+      }
+      circle:hover {
+        fill: #ff7f0e;
+        stroke: #707f0e;
+      }
+      circle.selected:hover {
+        fill: #ff7f0e;
+        stroke: #ff7f0e;
+      }
     </style>
   </head>
   <body>
@@ -48,7 +55,7 @@
         <form class="col-md-4">
           <div class="form-group">
             <label for="year">When did you start paying taxes in California?</label>
-            <select class="form-control" id="year">
+            <select class="form-control" id="year_select">
               <option value='1965'>1965</option>
               <option value='1965'>1970</option>
               <option value='1965'>1975</option>
@@ -73,14 +80,19 @@
       <div class="row">
         <div class="col-md-9">
           <div id="chart1" class="chart"></div>
+          <div id="chart2" class="chart"></div>
         </div>
         <div id="contribution" class="col-md-3">
-          <p>Approximate funding of UC:</p>
+          <p>Approximate funding of UC (2015 Dollars):</p>
           <h1 id="contrib">Hello World!</h1>
         </div>
       </div>
-    </div>
-    <script type="text/javascript" src="logic.js"></script>
-    
+    </div class="row">
+      <p>
+        Check this out!
+      </p>
+  </div>
+  <script type="text/javascript" src="logic.js"></script>
+  
   </body>
 </html>
