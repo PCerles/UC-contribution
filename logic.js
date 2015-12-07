@@ -28,7 +28,7 @@ var taxrateCallback = function(data) {
           "ymax": 500000, "ymin": 0, 
           "title": "Graph your income (in 2015 dollars)",
           "xlabel": "Year",
-          "ylabel": "Income ($)",
+          "ylabel": "",
           "inflation": true
         });
 }
@@ -61,7 +61,7 @@ SimpleGraph = function(elemid, options) {
   this.padding = {
      "top":    this.options.title  ? 40 : 20,
      "right":                 30,
-     "bottom": this.options.xlabel ? 60 : 10,
+     "bottom": this.options.xlabel ? 40 : 10,
      "left":   90
   };
 
@@ -125,7 +125,7 @@ SimpleGraph = function(elemid, options) {
     this.vis.append("text")
         .attr("class", "axislabel")
         .text(this.options.xlabel)
-        .attr("x", this.size.width/2)
+        .attr("x", this.size.width)
         .attr("y", this.size.height)
         .attr("dy","2.4em")
         .style("text-anchor","middle");
@@ -137,7 +137,7 @@ SimpleGraph = function(elemid, options) {
         .attr("class", "axislabel")
         .text(this.options.ylabel)
         .style("text-anchor","middle")
-        .attr("transform","translate(" + -80 + " " + this.size.height/2+") rotate(-90)");
+        .attr("transform","translate(" + -75 + " " + this.size.height/2+") rotate(-90)");
   }
  
 
@@ -310,7 +310,8 @@ SimpleGraph.prototype.update = function() {
     }
     last = curr;
   }
-  var a = d3.select('#contrib')
+  var contrib_text = this.inflation ? "#contrib_inf" : "#contrib";
+  d3.select(contrib_text)
     .html('$'+totalTax.toFixed(0));
   var elem = this.vis.select("svg").selectAll("g");
 
@@ -355,7 +356,6 @@ SimpleGraph.prototype.mouseup = function() {
   var self = this;
   return function() {
     document.onselectstart = function() { return true; };
-    d3.select('body').style("cursor", "auto");
     d3.select('body').style("cursor", "auto");
     if (self.dragged) { 
       self.dragged = null 
