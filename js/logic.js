@@ -7,7 +7,7 @@ var taxrates;
 var graph;
 var dataCallback = function(data) {
   yearlyData = data;
-  d3.json('data.json', function(error, json) {
+  d3.json('data/taxbracketdata.json', function(error, json) {
     if (error) return console.warn(error);
     taxrateCallback(json);
   })
@@ -38,7 +38,7 @@ $('#max_income').on('change', function() {
 });
 
 
-d3.csv('quintiledata.csv', function(d) {
+d3.csv('data/quintiledata.csv', function(d) {
   return {
     year: +d.Year,
     first: +d.first,
