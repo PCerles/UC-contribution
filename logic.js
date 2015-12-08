@@ -18,7 +18,7 @@ var taxrateCallback = function(data) {
   graph = new SimpleGraph("chart1", {
           "xmax": 2010, "xmin": 1970,
           "ymax": 200000, "ymin": 0, 
-          "title": "Graph your income",
+          "title": "",
           "xlabel": "Year",
           "ylabel": "Income ($)",
           "inflation": false
@@ -27,6 +27,14 @@ var taxrateCallback = function(data) {
 
 $('#inflation-adjust-checkbox').change(function(){
     this.checked ? graph.setInflationMode(true) : graph.setInflationMode(false);
+});
+
+$('#year_select').on('change', function() {
+  graph.changeStartDate(+this.value);
+});
+
+$('#max_income').on('change', function() {
+  graph.changeYAxis(+this.value);
 });
 
 
@@ -85,12 +93,12 @@ SimpleGraph = function(elemid, options) {
   var xrange =  (this.options.xmax - this.options.xmin - 5),
       yrange2 = (this.options.ymax - this.options.ymin) / 2,
       yrange4 = yrange2 / 2,
-      datacount = 9; // replace with logic
+      datacount = xrange / 5; // replace with logic
 
 
   this.points = d3.range(datacount).map(function(i) { 
     return { x: i * 5 + this.options.xmin + 5,
-             y: 100000,
+             y: this.options.ymax / 2,
              index: i }; 
   }, self);
 
@@ -224,29 +232,22 @@ SimpleGraph = function(elemid, options) {
           .attr("class", "line")
           .attr("d", this.line(this.points));
 
-  var elem = this.vis.select("svg").selectAll("g")
-        .data(this.points);
-
-  var elemEnter = elem.enter()
-      .append("g");
-
-  var circle  = elemEnter.append("circle")
-      .attr("class", function(d) { return d === self.selected ? "selected" : null; })
-      .attr("cx",    function(d) { return self.x(d.x); })
-      .attr("cy",    function(d) { return self.y(d.y); })
-      .attr("r", 7)
-      .style("cursor", "pointer")
-      .on("mousedown.drag",  self.datapoint_drag())
-      .on("touchstart.drag", self.datapoint_drag());
-
-  elem.append("text")
-      .text(function(d) { return "$" + d.y.toFixed(0)})
-      .attr("class", 'circle_text')
-      .attr("dx", function(d){return self.x(d.x) - 25})
-      .attr("dy", function(d){return self.y(d.y) - 15});
-
   self.update(); 
 };
+
+SimpleGraph.prototype.changeStartDate = function(date) {
+  this.options.xmin = date - 5;
+  var self = this;
+  var xrange =  (this.options.xmax - this.options.xmin - 5);
+  var datacount = xrange / 5;
+  this.points = d3.range(datacount).map(function(i) {
+    return { x: i * 5 + self.options.xmin + 5,
+             y: self.options.ymax / 2,
+             index: i }; 
+  }, self);
+  console.log(this.points)
+  this.update();     
+}
 
 /** Sets the units of the y axis to be inflation based or not. */
 SimpleGraph.prototype.setInflationMode = function(inflation_adjusted) {
@@ -323,18 +324,88 @@ SimpleGraph.prototype.update = function() {
   }
   d3.select('#contrib')
     .html('$'+totalTax.toFixed(0));
-  var elem = this.vis.select("svg").selectAll("g");
 
-  elem.selectAll('circle')
+  var elem = this.vis.select("svg").selectAll("g")
+        .data(this.points);
+
+  elem.exit().remove();
+
+  var elemEnter = elem.enter()
+      .append("g");
+
+  var circle  = elemEnter.append("circle")
       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
       .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); })
+      .attr("r", 7)
+      .style("cursor", "pointer")
+      .on("mousedown.drag",  self.datapoint_drag())
+      .on("touchstart.drag", self.datapoint_drag());
 
-  elem.selectAll(".circle_text")
+  elemEnter.append("text")
+      .text(function(d) { return "$" + d.y.toFixed(0)})
+      .attr("class", 'circle_text')
+      .attr("dx", function(d){return self.x(d.x) - 25})
+      .attr("dy", function(d){return self.y(d.y) - 15});
+
+  var circles = elem.select('circle')
+      .attr("class", function(d) { return d === self.selected ? "selected" : null; })
+      .attr("cx",    function(d) {console.log(d.x); return self.x(d.x); })
+      .attr("cy",    function(d) { return self.y(d.y); });
+
+  var text = elem.select(".circle_text")
       .text(function(d) { return "$" + d.y.toFixed(0)})
       .attr("dx", function(d){return self.x(d.x) - 25})
       .attr("dy", function(d){return self.y(d.y) - 15});
 
+  elem.exit().remove();
+}
+
+SimpleGraph.prototype.changeYAxis = function(value) {
+  this.options.ymax = value;
+  this.y = d3.scale.linear()
+    .domain([this.options.ymax, this.options.ymin])
+    .nice()
+    .range([0, this.size.height])
+    .nice();
+  ty = function(d) { 
+    return "translate(0," + self.y(d) + ")";
+  },
+  stroke = function(d) { 
+    return d ? "#ccc" : "#666"; 
+  }
+  var self = this;
+  fx = self.x.tickFormat(10);
+  fy = self.y.tickFormat(10);
+
+  var gy = this.vis.selectAll("g.y")
+        .data(self.y.ticks(10), String)
+        .attr("transform", ty);
+
+  gy.select("text")
+      .text(fy);
+
+  var gye = gy.enter().insert("g", "a")
+      .attr("class", "y")
+      .attr("transform", ty)
+      .attr("background-fill", "#FFEEB6");
+
+  gye.append("line")
+      .attr("stroke", stroke)
+      .attr("x1", 0)
+      .attr("x2", self.size.width);
+
+  gye.append("text")
+      .attr("class", "axis")
+      .attr("x", -3)
+      .attr("dy", ".35em")
+      .attr("text-anchor", "end")
+      .text(fy)
+      .style("cursor", "ns-resize")
+      .on("mouseover", function(d) { d3.select(this).style("font-weight", "bold");})
+      .on("mouseout",  function(d) { d3.select(this).style("font-weight", "normal");})
+  gy.exit().remove();
+  this.update();
 }
 
 SimpleGraph.prototype.datapoint_drag = function() {

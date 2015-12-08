@@ -36,46 +36,53 @@
     </style>
   </head>
   <body>
-    <div class="container-fluid">
+    <div class="container">
+      <h1 class="center-block" style="text-align:center">What do your taxes pay for?</h1>
       <div class="row">
-        <form class="col-md-4">
+        <form class="col-md-3">
           <div class="form-group">
             <label for="year">When did you start paying taxes in California?</label>
             <select class="form-control" id="year_select">
-              <option value='1965'>1965</option>
-              <option value='1965'>1970</option>
-              <option value='1965'>1975</option>
-              <option value='1965'>1980</option>
-              <option value='1965'>1985</option>
-              <option value='1965'>1990</option>
-              <option value='1965'>1995</option>
-              <option value='1965'>2000</option>
-              <option value='1965'>2005</option>
-              <option value='1965'>2010</option>
-              <option value='1965'>2015</option>
+              <option value='1970'>1970</option>
+              <option value='1975'>1975</option>
+              <option value='1980'>1980</option>
+              <option value='1985'>1985</option>
+              <option value='1990'>1990</option>
+              <option value='1995'>1995</option>
+              <option value='2000'>2000</option>
+              <option value='2005'>2005</option>
+              <option value='2010'>2010</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="max-income">Enter your maximum income earned.</label>
-            <input class="form-control" id="max-income"></input>
+            <label for="max-income">Select a ceiling on your maximum income earned.</label>
+            <select class="form-control" id="max_income">
+              <option value='10000'>$10000</option>
+              <option value='50000'>$50000</option>
+              <option value='200000'>$200000</option>
+              <option value='500000'>$500000</option>
+              <option value='10000000'>$10000000</option>
+              <option value='50000000'>$50000000</option>
+              <option value='10000000'>$10000000</option>
+              <option value='50000000'>$50000000</option>
+            </select>
           </div>
-          <button class="btn btn-default" id="makeNewGraph" type="submit">Make New Graph</button>
-        </form>
-        <input type="checkbox" id="inflation-adjust-checkbox" value="inflation">Inflation adjusted income<br>
-      </div>
-
-      <div class="row">
-          <div class="col-sm-12">
-            <div class="row">
-              <div id="chart1" class="chart"></div>
-            </div class="row">
-            <div class="row" style="text-align:center;"  >
-                <div class="center-block">
-                  <h3 >Approximate funding of UC (2015 Dollars):</h3>
-                  <h1 id="contrib" style="color:steelblue"></h1>
-                </div>
+          <div class="form-group">
+            <label for="inflation">Income in 2015 dollars?</label>
+            <input type="checkbox" id="inflation-adjust-checkbox" value="inflation"><br>
+          </div>
+          <div class="row" style="text-align:center;"  >
+            <div class="center-block">
+              <h3 >Approximate funding of UC (2015 Dollars):</h3>
+              <h1 id="contrib" style="color:steelblue"></h1>
             </div>
-          </div>
+        </div>
+      </form>
+      <div class="col-md-9">
+        <div class="row">
+          <div id="chart1" class="chart"></div>
+        </div class="row">
+      </div>
       </div>
       <div class="row" style="text-align:center;">
         Your taxes pay for a lot of shit in California! But how much of that shit is education? And how much is other stuff?
