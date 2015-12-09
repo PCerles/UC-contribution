@@ -245,7 +245,6 @@ SimpleGraph.prototype.changeStartDate = function(date) {
              y: self.options.ymax / 2,
              index: i }; 
   }, self);
-  console.log(this.points)
   this.update();     
 }
 
@@ -350,7 +349,7 @@ SimpleGraph.prototype.update = function() {
 
   var circles = elem.select('circle')
       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
-      .attr("cx",    function(d) {console.log(d.x); return self.x(d.x); })
+      .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); });
 
   var text = elem.select(".circle_text")
