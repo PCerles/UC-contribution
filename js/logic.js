@@ -15,7 +15,7 @@ var dataCallback = function(data) {
 
 var taxrateCallback = function(data) {
   taxrates = data;
-  graph = new SimpleGraph("chart1", {
+  graph = new SimpleGraph("chart1", "chart2", {
           "xmax": 2010, "xmin": 1970,
           "ymax": 200000, "ymin": 0, 
           "title": "",
@@ -51,9 +51,10 @@ d3.csv('data/quintiledata.csv', function(d) {
   };
 }, dataCallback);
 
-SimpleGraph = function(elemid, options) {
+SimpleGraph = function(chart1, chart2, options) {
   var self = this;
-  this.chart = document.getElementById(elemid);
+  this.chart = document.getElementById(chart1);
+  this.chart2 = document.getElementById(chart2);
   this.cx = this.chart.clientWidth;
   this.cy = this.chart.clientHeight;
   this.options = options || {};
@@ -62,12 +63,19 @@ SimpleGraph = function(elemid, options) {
   this.options.ymax = options.ymax;
   this.options.ymin = options.ymin;
   this.inflation = options.inflation;
+  this.totalPaid = [{name: 'UC', amount: 0}, {name: 'Prisons', amount: 0}];
 
   this.padding = {
      "top":    this.options.title  ? 40 : 20,
      "right":                 30,
      "bottom": this.options.xlabel ? 40 : 10,
      "left":   90
+  };
+
+  this.padding2 = {
+     "top":    100,
+     "right":  5,
+     "left":   15
   };
 
   this.size = {
@@ -232,6 +240,52 @@ SimpleGraph = function(elemid, options) {
           .attr("class", "line")
           .attr("d", this.line(this.points));
 
+  var barWidth = this.cx * .3;
+  var barHeight = 20;
+  var x = d3.scale.linear()
+      .range([0, barWidth]);
+
+  this.vis2 = d3.select(this.chart2).append("svg")
+      .attr("width", this.cx)
+      .append("g")
+       .attr("transform", "translate(" + this.padding2.left + "," + this.padding2.top + ")");
+
+  this.vis2.append("text")
+        .attr("class", "chart_title")
+        .text("Contributions")
+        .attr("x", barWidth /2)
+        .attr("dy","-0.8em")
+        .style("text-anchor","middle");
+
+  this.vis2.append("line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", 0)
+        .attr("y2", barHeight * 2)
+        .attr("stroke", "black");
+
+  x.domain([0, this.options.ymax * .1 * (this.options.xmax - this.options.xmin)]);
+
+  this.vis2.attr("height", barHeight * this.totalPaid.length);
+
+  var bar = this.vis2.selectAll("g")
+      .data(this.totalPaid)
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * barHeight + ")"; });
+
+  bar.append("text")
+        .attr("class", "bar_text")
+        .style('fill', 'black')
+        .attr("x", function(d) { return x(d.amount) - 3; })
+        .attr("y", barHeight / 2)
+        .attr("dy", ".35em")
+        .text(function(d) { return d.amount; });
+
+  bar.append("rect")
+      .attr("class", "bar")
+      .attr("width", function(d) { return x(d.amount); })
+      .attr("height", barHeight - 1);
+
   self.update(); 
 };
 
@@ -309,7 +363,13 @@ SimpleGraph.prototype.update = function() {
   var self = this;
   var lines = this.vis.select("path").attr("d", this.line(this.points));
 
-  var last = this.points[0];
+  var start;
+  if (this.dragged == null) {
+    start = 0;
+  } else {
+    var start = this.dragged.index == 0 ? 0 : this.dragged.index - 1;
+  } // fix to only do before and after point
+  var last = this.points[start];
   var totalTax = 0
 
   for (var i = 1; i < this.points.length; i++) {
@@ -321,8 +381,7 @@ SimpleGraph.prototype.update = function() {
     }
     last = curr;
   }
-  d3.select('#contrib')
-    .html('$'+totalTax.toFixed(0));
+  this.totalPaid[0].amount = totalTax;
 
   var elem = this.vis.select("svg").selectAll("g")
         .data(this.points);
@@ -332,7 +391,7 @@ SimpleGraph.prototype.update = function() {
   var elemEnter = elem.enter()
       .append("g");
 
-  var circle  = elemEnter.append("circle")
+  circle  = elemEnter.append("circle")
       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
       .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); })
@@ -347,17 +406,30 @@ SimpleGraph.prototype.update = function() {
       .attr("dx", function(d){return self.x(d.x) - 25})
       .attr("dy", function(d){return self.y(d.y) - 15});
 
-  var circles = elem.select('circle')
+  circles = elem.select('circle')
       .attr("class", function(d) { return d === self.selected ? "selected" : null; })
       .attr("cx",    function(d) { return self.x(d.x); })
       .attr("cy",    function(d) { return self.y(d.y); });
 
-  var text = elem.select(".circle_text")
+  text = elem.select(".circle_text")
       .text(function(d) { return "$" + d.y.toFixed(0)})
       .attr("dx", function(d){return self.x(d.x) - 25})
       .attr("dy", function(d){return self.y(d.y) - 15});
 
   elem.exit().remove();
+  var x = d3.scale.linear()
+      .range([0, 420]);
+
+  x.domain([0, this.options.ymax * .01 * (this.options.xmax - this.options.xmin)]);
+
+  var bars = this.vis2.selectAll("g")
+                .data(this.totalPaid);
+
+  bars.selectAll("rect")
+      .attr("width", function(d) {console.log("hello"); return x(d.amount); });
+  bars.selectAll("text")
+      .text(function(d) { return "$" + d.amount.toFixed(0); })
+      .attr("x", function(d) { return x(d.amount) - 40; })
 }
 
 SimpleGraph.prototype.changeYAxis = function(value) {
@@ -424,9 +496,11 @@ SimpleGraph.prototype.mousemove = function() {
     
     if (self.dragged) {
       var newY = self.y.invert(Math.max(0, Math.min(self.size.height, p[1])));
+      self.points[self.dragged.index].y = newY;
+      /**
       for (var i = self.dragged.index; i < self.points.length; i++) {
         self.points[i].y = newY;
-      }
+      }*/
       self.update();
     };
   }

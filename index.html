@@ -10,7 +10,7 @@
     <style type="text/css">
       .chart {
         background-color: white;
-        height: 500px;
+        height: 600px;
       }
       circle, .line {
         fill: none;
@@ -33,13 +33,18 @@
         fill: #ff7f0e;
         stroke: #ff7f0e;
       }
+
+      .bar {
+        fill: #ffff00;
+        fill-opacity: 0.3;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h1 class="center-block" style="text-align:center">What do your taxes pay for?</h1>
       <div class="row">
-        <form class="col-md-3">
+        <form class="center-block">
           <div class="form-group">
             <label for="year">When did you start paying taxes in California?</label>
             <select class="form-control" id="year_select">
@@ -71,17 +76,15 @@
             <label for="inflation">Income in 2015 dollars?</label>
             <input type="checkbox" id="inflation-adjust-checkbox" value="inflation"><br>
           </div>
-          <div class="row" style="text-align:center;"  >
-            <div class="center-block">
-              <h3 >Approximate funding of UC (2015 Dollars):</h3>
-              <h1 id="contrib" style="color:steelblue"></h1>
-            </div>
         </div>
       </form>
-      <div class="col-md-9">
-        <div class="row">
+      <div class="row">
+        <div class="col-md-9">
           <div id="chart1" class="chart"></div>
-        </div class="row">
+        </div>
+        <div class="col-md-3">
+          <div id="chart2" class="chart"></div>
+        </div>
       </div>
       </div>
       <div class="row" style="text-align:center;">
