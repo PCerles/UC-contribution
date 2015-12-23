@@ -228,7 +228,8 @@ SimpleGraph = function(chart1, chart2, options) {
 
   this.line = d3.svg.line()
         .x(function(d, i) { return this.x(this.points[i].x); })
-        .y(function(d, i) { return this.y(this.points[i].y); });
+        .y(function(d, i) { return this.y(this.points[i].y); })
+        .interpolate("step-after");
 
   this.vis.append("svg")
       .attr("top", 0)
@@ -362,22 +363,15 @@ SimpleGraph.prototype.findYearContribution = function(year, income) {
 SimpleGraph.prototype.update = function() {
   var self = this;
   var lines = this.vis.select("path").attr("d", this.line(this.points));
-
-  var start;
-  if (this.dragged == null) {
-    start = 0;
-  } else {
-    var start = this.dragged.index == 0 ? 0 : this.dragged.index - 1;
-  } // fix to only do before and after point
-  var last = this.points[start];
   var totalTax = 0
+  var last = this.points[0]
 
   for (var i = 1; i < this.points.length; i++) {
     var curr = this.points[i];
     var interval = curr.x - last.x;
-    var diff = (curr.y - last.y) / interval;
+    var amount = last.y;
     for (var j = 0; j < interval; j++) {
-      totalTax += this.findYearContribution(j + last.x, last.y + diff * j);
+      totalTax += this.findYearContribution(j + last.x, amount);
     }
     last = curr;
   }
